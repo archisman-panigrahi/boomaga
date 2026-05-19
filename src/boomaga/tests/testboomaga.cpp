@@ -347,7 +347,7 @@ void TestBoomaga::test_ProjectRotation()
     Layout *layout = createLayout(layoutName);
     QList<ProjectPage*> pages = createPages(pagesDef);
 
-    Rotation result = Project::instance()->calcRotation(pages, layout);
+    Rotation result = project->calcRotation(pages, layout);
     QCOMPARE((int)result, (int)expected);
 
     delete layout;

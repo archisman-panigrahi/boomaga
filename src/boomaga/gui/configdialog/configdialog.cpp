@@ -188,7 +188,7 @@ void ConfigDialog::saveSettings()
     settings->setValue(Settings::RightToLeft, ui->rightToLeft->isChecked());
 
     if (upadateProject)
-        Project::instance()->update();
+        project->update();
 
 #ifdef MAC_UPDATER
     Updater::sharedUpdater().setAutomaticallyChecksForUpdates(

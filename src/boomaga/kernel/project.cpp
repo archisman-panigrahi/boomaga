@@ -800,7 +800,7 @@ bool Project::writeDocument(const QList<Sheet*> &sheets, const QString &fileName
 {
     QFile f(fileName);
     if (!f.open(QIODevice::WriteOnly))
-        return Project::instance()->error(tr("I can't write to file '%1'").arg(fileName) + "\n" + f.errorString());
+        return project->error(tr("I can't write to file '%1'").arg(fileName) + "\n" + f.errorString());
 
     bool res = writeDocument(sheets, &f);
     f.close();
@@ -866,7 +866,7 @@ void Project::setPrinterProfile(Printer *printer, int profile, bool update)
 /************************************************
 
  ************************************************/
-Project *Project::instance()
+Project *project
 {
     static Project *inst = 0;
     if (!inst)
