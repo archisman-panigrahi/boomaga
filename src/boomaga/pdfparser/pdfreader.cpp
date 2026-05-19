@@ -183,7 +183,8 @@ XRefStreamData::XRefStreamData(const char *buf, const quint64 size, const Dict &
     Q_UNUSED(mSize)
     // W - An array of integers representing the size of the fields in a
     // single cross-reference entry.
-    const Array &w = dict.value("W").asArray();
+    const Value wValue = dict.value("W");
+    const Array &w = wValue.asArray();
     if (!w.isValid())
         throw ReaderError("Incorrect XRef stream dictionary", 0);
 
@@ -1125,7 +1126,8 @@ void Reader::readObjectFromStream(ObjNum objNum, Object *res, ObjNum streamObjNu
     }
     else
     {
-        const Link &extends = streamObj.dict().value("Extends").asLink();
+        const Value extendsValue = streamObj.dict().value("Extends");
+        const Link &extends = extendsValue.asLink();
         if (extends.isValid())
         {
             readObjectFromStream(objNum, res, extends.objNum(), extends.genNum(), 0);
