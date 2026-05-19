@@ -97,7 +97,7 @@ void RenderCache::renderSheet(int sheetNum)
         mRender->renderSheet(sheetNum);
 
     int start = qMax(0, sheetNum - CACHE_PRE);
-    int end = qMin(project->previewSheetCount()-1, sheetNum + CACHE_POST);
+    int end = qMin(Project::instance()->previewSheetCount()-1, sheetNum + CACHE_POST);
 
     for (int i=start; i<sheetNum; ++i)
     {
@@ -153,16 +153,16 @@ PreviewWidget::PreviewWidget(QWidget *parent) :
     mWheelDelta(0)
 {
     QPalette pal(palette());
-    pal.setColor(QPalette::Background, QColor(105, 101, 98));
+    pal.setColor(QPalette::Window, QColor(105, 101, 98));
     setPalette(pal);
     setAutoFillBackground(true);
 
-    connect(project, SIGNAL(changed()),
+    connect(Project::instance(), SIGNAL(changed()),
             this, SLOT(refresh()));
 
     mRender = new RenderCache(RESOLUTIN, 8, this);
 
-    connect(project, SIGNAL(tmpFileRenamed(QString)),
+    connect(Project::instance(), SIGNAL(tmpFileRenamed(QString)),
             mRender, SLOT(setFileName(QString)));
 
     connect(mRender, SIGNAL(sheetReady(QImage,int)),
@@ -184,20 +184,20 @@ PreviewWidget::~PreviewWidget()
  * ***********************************************/
 QRectF PreviewWidget::pageRect(int pageNum) const
 {
-    Sheet *sheet = project->currentSheet();
+    Sheet *sheet = Project::instance()->currentSheet();
     if (!sheet || !mScaleFactor)
         return QRectF();
 
-    TransformSpec spec = project->layout()->transformSpec(sheet, pageNum, project->rotation());
+    TransformSpec spec = Project::instance()->layout()->transformSpec(sheet, pageNum, Project::instance()->rotation());
 
     QSize size = QSize(spec.rect.width()  * mScaleFactor,
                        spec.rect.height() * mScaleFactor);
 
-    if (isLandscape(project->rotation()))
+    if (isLandscape(Project::instance()->rotation()))
         size.transpose();
 
     QRect rect(QPoint(0, 0), size);
-    if (isLandscape(project->rotation()))
+    if (isLandscape(Project::instance()->rotation()))
     {
         rect.moveRight(mDrawRect.right() - spec.rect.top()  * mScaleFactor);
         rect.moveTop(  mDrawRect.top()   + spec.rect.left() * mScaleFactor);
@@ -225,7 +225,7 @@ QRectF PreviewWidget::pageRect(int pageNum) const
  * ***********************************************/
 int PreviewWidget::pageAt(const QPoint &point) const
 {
-    Sheet * sheet = project->currentSheet();
+    Sheet * sheet = Project::instance()->currentSheet();
     if (!sheet)
         return -1;
 
@@ -250,7 +250,7 @@ void PreviewWidget::drawShadow(QPainter &painter, const QRectF &rect)
     painter.save();
     painter.setClipRect(rect.adjusted(0, 0, width, width));
 
-    QColor lightColor = this->palette().color(QPalette::Background);
+    QColor lightColor = this->palette().color(QPalette::Window);
     QColor darkColor  = lightColor.darker(160);
 
     QRectF shadowRect = rect.adjusted(0, 0, width, width);
@@ -317,13 +317,13 @@ void PreviewWidget::paintEvent(QPaintEvent *)
         if (mSheetNum < 0)
             return;
 
-        Sheet *sheet = project->previewSheet(mSheetNum);
+        Sheet *sheet = Project::instance()->previewSheet(mSheetNum);
 
         if (!sheet)
             return;
 
         QPainter painter(this);
-        QRectF rect = project->printer()->paperRect();
+        QRectF rect = Project::instance()->printer()->paperRect();
         painter.fillRect(rect, Qt::white);
 
 
@@ -333,7 +333,7 @@ void PreviewWidget::paintEvent(QPaintEvent *)
             pen.setStyle(Qt::DotLine);
             pen.setColor(Qt::darkGray);
             painter.setPen(pen);
-            TransformSpec spec = project->layout()->transformSpec(sheet, i, project->rotation());
+            TransformSpec spec = Project::instance()->layout()->transformSpec(sheet, i, Project::instance()->rotation());
 
             painter.drawRect(spec.rect);
             QFont font = painter.font();
@@ -374,9 +374,9 @@ void PreviewWidget::paintEvent(QPaintEvent *)
     if (mImage.isNull())
         return;
 
-    QSizeF printerSize =  project->printer()->paperRect().size();
-    Rotation rotation = project->rotation();
-    bool grayscale = project->printer()->grayscale();
+    QSizeF printerSize =  Project::instance()->printer()->paperRect().size();
+    Rotation rotation = Project::instance()->rotation();
+    bool grayscale = Project::instance()->printer()->grayscale();
 
     if (isLandscape(rotation))
         printerSize.transpose();
@@ -489,10 +489,10 @@ void PreviewWidget::paintEvent(QPaintEvent *)
     mDrawRect.moveCenter(center);
 
     // Draw current page rect ...................
-    Sheet *sheet = project->currentSheet();
+    Sheet *sheet = Project::instance()->currentSheet();
     if (sheet)
     {
-        ProjectPage *curPage = project->currentPage();
+        ProjectPage *curPage = Project::instance()->currentPage();
         if (curPage)
         {
             painter.save();
@@ -509,10 +509,10 @@ void PreviewWidget::paintEvent(QPaintEvent *)
 //#define DEBUG_CLICK_RECT
 #ifdef DEBUG_CLICK_RECT
     {
-        Sheet *sheet = project->currentSheet();
+        Sheet *sheet = Project::instance()->currentSheet();
         if (sheet)
         {
-            ProjectPage *curPage = project->currentPage();
+            ProjectPage *curPage = Project::instance()->currentPage();
             painter.save();
             for (int i=0; i< sheet->count(); ++i)
             {
@@ -538,7 +538,7 @@ void PreviewWidget::paintEvent(QPaintEvent *)
  ************************************************/
 void PreviewWidget::sheetImageReady(const QImage &image, int sheetNum)
 {
-    int curSheet = project->currentSheetNum();
+    int curSheet = Project::instance()->currentSheetNum();
     if (sheetNum >= qMin(mDisplayedSheetNum, curSheet) &&
         sheetNum <= qMax(mDisplayedSheetNum, curSheet))
     {
@@ -556,7 +556,7 @@ void PreviewWidget::sheetImageReady(const QImage &image, int sheetNum)
  ************************************************/
 void PreviewWidget::refresh()
 {
-    Sheet *sheet = project->currentSheet();
+    Sheet *sheet = Project::instance()->currentSheet();
     if (!sheet)
     {
         mImage = QImage();
@@ -581,13 +581,13 @@ void PreviewWidget::refresh()
  ************************************************/
 void PreviewWidget::wheelEvent(QWheelEvent *event)
 {
-    mWheelDelta -= event->delta();
+    mWheelDelta -= event->angleDelta().y();
     int pages = mWheelDelta / 120;
 
     if (pages)
     {
         mWheelDelta = 0;
-        project->setCurrentSheet(project->currentSheetNum() + pages);
+        Project::instance()->setCurrentSheet(Project::instance()->currentSheetNum() + pages);
     }
 }
 
@@ -603,29 +603,29 @@ void PreviewWidget::keyPressEvent(QKeyEvent *event)
         {
 
         case Qt::Key_Home:
-            project->setCurrentSheet(0);
+            Project::instance()->setCurrentSheet(0);
             break;
 
         case Qt::Key_End:
-            project->setCurrentSheet(project->previewSheetCount()-1);
+            Project::instance()->setCurrentSheet(Project::instance()->previewSheetCount()-1);
             break;
 
         case Qt::Key_PageUp:
-            project->setCurrentSheet(project->currentSheetNum() - 10);
+            Project::instance()->setCurrentSheet(Project::instance()->currentSheetNum() - 10);
             break;
 
         case Qt::Key_PageDown:
-            project->setCurrentSheet(project->currentSheetNum() + 10);
+            Project::instance()->setCurrentSheet(Project::instance()->currentSheetNum() + 10);
             break;
 
         case Qt::Key_Left:
         case Qt::Key_Up:
-            project->setCurrentSheet(project->currentSheetNum() - 1);
+            Project::instance()->setCurrentSheet(Project::instance()->currentSheetNum() - 1);
             break;
 
         case Qt::Key_Right:
         case Qt::Key_Down:
-            project->setCurrentSheet(project->currentSheetNum() + 1);
+            Project::instance()->setCurrentSheet(Project::instance()->currentSheetNum() + 1);
             break;
 
         }
@@ -638,7 +638,7 @@ void PreviewWidget::keyPressEvent(QKeyEvent *event)
  ************************************************/
 void PreviewWidget::contextMenuEvent(QContextMenuEvent *event)
 {
-    Sheet *sheet = project->currentSheet();
+    Sheet *sheet = Project::instance()->currentSheet();
     if (!sheet)
         return;
 
@@ -655,7 +655,7 @@ void PreviewWidget::contextMenuEvent(QContextMenuEvent *event)
  ************************************************/
 void PreviewWidget::mousePressEvent(QMouseEvent *event)
 {
-    Sheet *sheet = project->currentSheet();
+    Sheet *sheet = Project::instance()->currentSheet();
 
     if (!sheet)
         return;
@@ -668,5 +668,5 @@ void PreviewWidget::mousePressEvent(QMouseEvent *event)
     if (!page)
         return;
 
-    project->setCurrentPage(page);
+    Project::instance()->setCurrentPage(page);
 }

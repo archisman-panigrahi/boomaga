@@ -34,10 +34,6 @@
 #include <QBuffer>
 #include <QAbstractItemModel>
 
-#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
-#include <QTextDocument>
-#endif
-
 /************************************************
  *
  ************************************************/
@@ -45,7 +41,7 @@ JobListView::JobListView(QWidget *parent):
     PagesListView(parent)
 {
     connect(this, SIGNAL(itemMoved(int,int)),
-            project, SLOT(moveJob(int,int)));
+            Project::instance(), SLOT(moveJob(int,int)));
 }
 
 
@@ -56,18 +52,14 @@ QList<PagesListView::ItemInfo> JobListView::getPages() const
 {
     QList<ItemInfo> res;
     int pageNum = 0;
-    for (int i=0; i<project->jobs()->count(); ++i)
+    for (int i=0; i<Project::instance()->jobs()->count(); ++i)
     {
-        Job job = project->jobs()->at(i);
+        Job job = Project::instance()->jobs()->at(i);
         ItemInfo page;
         page.title = job.title() + "\n      " + tr("%1 pages").arg(job.visiblePageCount());
         page.page = job.visiblePageCount() ? pageNum : -1;
         page.toolTip = QString("<b>%1</b><p><font size=-1><i>%2</i></font>")
-#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
-                .arg(Qt::escape(job.title()))
-#else
                 .arg(job.title().toHtmlEscaped())
-#endif
                 .arg(tr("%1 pages").arg(job.visiblePageCount()));
 
         res << page;
@@ -84,6 +76,6 @@ QList<PagesListView::ItemInfo> JobListView::getPages() const
 void JobListView::contextMenuEvent(QContextMenuEvent *e)
 {
     int n = indexAt(e->pos()).row();
-    if (n >-1 && n < project->jobs()->count())
-        emit contextMenuRequested(project->jobs()->at(n));
+    if (n >-1 && n < Project::instance()->jobs()->count())
+        emit contextMenuRequested(Project::instance()->jobs()->at(n));
 }

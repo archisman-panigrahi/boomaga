@@ -538,7 +538,7 @@ bool Printer::print(const QList<Sheet *> &sheets, const QString &jobName, bool d
                           .arg(QDir::homePath())
                           .arg(QCoreApplication::applicationPid());
 
-    project->writeDocument(sheets, file);
+    Project::instance()->writeDocument(sheets, file);
 
     QStringList args;
     args << "-P" << name();                       // Prints files to the named printer.
@@ -549,7 +549,7 @@ bool Printer::print(const QList<Sheet *> &sheets, const QString &jobName, bool d
     // Duplex options ...........................
     if (duplexType() == DuplexAuto && doubleSided)
     {
-        if (project->layout()->flipType(flipType()) == FlipType::LongEdge)
+        if (Project::instance()->layout()->flipType(flipType()) == FlipType::LongEdge)
             args << "-o sides=two-sided-long-edge";
         else
             args << "-o sides=two-sided-short-edge";
@@ -606,7 +606,7 @@ bool Printer::print(const QList<Sheet *> &sheets, const QString &jobName, bool d
         f.close();
     }
 
-    project->writeDocument(sheets, fileName);
+    Project::instance()->writeDocument(sheets, fileName);
     QProcess::startDetached("okular", QStringList() << fileName);
     return true;
 #endif
