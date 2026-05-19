@@ -81,7 +81,7 @@ void BoomagaDbus::add(const QString &file)
  ************************************************/
 void BoomagaDbus::doAdd(const QString &file)
 {
-    Project::instance()->load(file);
+    project->load(file);
 }
 
 

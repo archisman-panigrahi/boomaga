@@ -41,7 +41,7 @@ JobListView::JobListView(QWidget *parent):
     PagesListView(parent)
 {
     connect(this, SIGNAL(itemMoved(int,int)),
-            Project::instance(), SLOT(moveJob(int,int)));
+            project, SLOT(moveJob(int,int)));
 }
 
 
@@ -52,9 +52,9 @@ QList<PagesListView::ItemInfo> JobListView::getPages() const
 {
     QList<ItemInfo> res;
     int pageNum = 0;
-    for (int i=0; i<Project::instance()->jobs()->count(); ++i)
+    for (int i=0; i<project->jobs()->count(); ++i)
     {
-        Job job = Project::instance()->jobs()->at(i);
+        Job job = project->jobs()->at(i);
         ItemInfo page;
         page.title = job.title() + "\n      " + tr("%1 pages").arg(job.visiblePageCount());
         page.page = job.visiblePageCount() ? pageNum : -1;
@@ -76,6 +76,6 @@ QList<PagesListView::ItemInfo> JobListView::getPages() const
 void JobListView::contextMenuEvent(QContextMenuEvent *e)
 {
     int n = indexAt(e->pos()).row();
-    if (n >-1 && n < Project::instance()->jobs()->count())
-        emit contextMenuRequested(Project::instance()->jobs()->at(n));
+    if (n >-1 && n < project->jobs()->count())
+        emit contextMenuRequested(project->jobs()->at(n));
 }
