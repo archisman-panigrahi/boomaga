@@ -866,7 +866,7 @@ void Project::setPrinterProfile(Printer *printer, int profile, bool update)
 /************************************************
 
  ************************************************/
-Project *project
+Project *Project::instance()
 {
     static Project *inst = 0;
     if (!inst)
